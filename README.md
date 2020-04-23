@@ -1,6 +1,35 @@
 # Deploys a built WAR to the VS Cloud
 ## Requirements
 The project builds a WAR file.
+### Example: Spark
+To make your maven Spark project produce a WAR, just add
+```xml
+    <packaging>war</packaging>
+```
+Inside of 
+```xml
+<project></project>
+```
+of your pom.xml
+
+If you want to directly run the WAR you can also add
+```xml
+    <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.3.9</version>
+    </plugin>
+```
+inside of
+```xml
+<build>
+    <plugins>
+    </plugins>
+</build>
+```
+of your pom.xml
+
+This enables the jetty:run task which starts your app locally.
 ## Usage
 Edit your settings.xml (usually located in $HOME/.m2) to add your Login credentials.
 Example:
@@ -53,3 +82,4 @@ Example:
     </plugins>
 </build>
 ```
+
