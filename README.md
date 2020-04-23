@@ -24,7 +24,7 @@ Example:
 <build>
     <plugins>
         <plugin>
-            <groupId>com.wizardryandfunnyhats.vs.deploy</groupId>
+            <groupId>com.github.herdinger.vs.deploy</groupId>
             <artifactId>vs-deploy</artifactId>
             <version>1.0</version>
             <executions>
