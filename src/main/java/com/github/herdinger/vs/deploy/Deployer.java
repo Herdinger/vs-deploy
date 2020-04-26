@@ -18,16 +18,22 @@ import java.util.stream.Collectors;
 public class Deployer {
     private List<String> pathComponents;
     private URI ownCloudUri;
-    private Path warfile;
+    private Path artifact;
+    private boolean isWar;
     private Sardine sardine;
     private Log log;
+    private List<String> ports;
+    private Map<String,String> env;
 
 
-    Deployer(Log log, String deploymentPath, String ownCloudRoot, Sardine sardine, String warFile) {
+    Deployer(Log log, String deploymentPath, String ownCloudRoot, Sardine sardine, String artifact, boolean isWar, List<String> ports, Map<String, String> env) {
+        this.ports = ports;
+        this.env = env;
         this.log = log;
         this.ownCloudUri = URI.create(ownCloudRoot + "/");
         this.sardine = sardine;
-        this.warfile = Path.of(warFile);
+        this.artifact = Path.of(artifact);
+        this.isWar = isWar;
         this.pathComponents = Arrays.stream(deploymentPath.split("/")).filter(component -> component.length() != 0).collect(Collectors.toList());
         if(this.pathComponents.lastIndexOf("container") != this.pathComponents.size() -1) {
             this.pathComponents.add("container");
@@ -62,27 +68,41 @@ public class Deployer {
 
     }
     private void deploy(List<String> pathComponents) throws MojoExecutionException {
-        List<String> warLocation = new ArrayList<>(pathComponents);
-        warLocation.add(warfile.getFileName().toString());
+        List<String> artifactLocation = new ArrayList<>(pathComponents);
+        artifactLocation.add(artifact.getFileName().toString());
         List<String> docekrLocation = new ArrayList<>(pathComponents);
         docekrLocation.add("Dockerfile");
-        try(FileInputStream stream = new FileInputStream(warfile.toFile())) {
-            log.info(String.format("uploading war file %s", ownCloudLocation(warLocation)));
-            sardine.put(ownCloudLocation(warLocation), stream);
+        try(FileInputStream stream = new FileInputStream(artifact.toFile())) {
+            log.info(String.format("uploading %s file %s", isWar ? "war" : "jar", ownCloudLocation(artifactLocation)));
+            sardine.put(ownCloudLocation(artifactLocation), stream);
             log.info(String.format("uploading DOCKERFILE file %s", ownCloudLocation(docekrLocation)));
             sardine.put(ownCloudLocation(docekrLocation), dockerFile());
         } catch (FileNotFoundException e) {
-            String error = "war file: " + warfile + " not found";
+            String error = (isWar? "war" : "jar") + " file: " + artifact + " not found";
             throw new MojoExecutionException(error);
         } catch (IOException e) {
-            String error = "error reading war file: " + warfile;
+            String error = "error reading " + (isWar? "war": "jar") + " file: " + artifact;
             throw new MojoExecutionException(error);
         }
     }
 
     private byte[] dockerFile() {
-        String dockerString = "FROM jetty:9-jre11\n"
-                            + "COPY " + warfile.getFileName().toString() + " /var/lib/jetty/webapps/ROOT.war";
+        String dockerString;
+        if(isWar) {
+            dockerString = "FROM jetty:9-jre11\n"
+                    + "COPY " + artifact.getFileName().toString() + " /var/lib/jetty/webapps/ROOT.war\n";
+        } else {
+            dockerString = "FROM openjdk:11-jre\n"
+                    + "COPY " + artifact.getFileName().toString() + " /opt/app/app.jar\n"
+                    + "WORKDIR /opt/app\n"
+                    + "CMD [\"java\", \"-jar\", \"app.jar\"]\n";
+        }
+        for(String port: ports) {
+            dockerString += ("EXPOSE " + port + "\n");
+        }
+        for(Map.Entry<String,String> envEntry: env.entrySet()) {
+            dockerString += ("ENV " + envEntry.getKey() + " " + envEntry.getValue() +"\n");
+        }
         return dockerString.getBytes(Charset.forName("UTF-8"));
     }
 

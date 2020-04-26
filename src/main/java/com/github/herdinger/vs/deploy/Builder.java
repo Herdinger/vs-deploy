@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 class Builder {
-    public static class AddAuthHeadersRequestFilter implements ClientRequestFilter {
+    static class AddAuthHeadersRequestFilter implements ClientRequestFilter {
 
         private final String username;
         private final String password;
@@ -43,34 +43,34 @@ class Builder {
         }
     }
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Buildable {
-        String id;
-        String path;
+    static class Buildable {
+        public String id;
+        public String path;
     }
-    public static class Buildables {
-        List<Buildable> buildables;
+    static class Buildables {
+        public List<Buildable> buildables;
     }
 
-    public static class OwncloudPath {
-        String refresh;
+    static class OwncloudPath {
+        public String refresh;
         String getPath() {
             return refresh.replace("owncloud://", "");
         }
     }
 
-    public static class Import {
+    static class Import {
         @JsonProperty("import")
-        String path;
+        public String path;
         Import(String path) {
             this.path = path;
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Consturciton {
-        String id;
+    static class Consturciton {
+        public String id;
     }
-    public interface VSPD
+    interface VSPD
     {
         @GET
         @Path("buildables")

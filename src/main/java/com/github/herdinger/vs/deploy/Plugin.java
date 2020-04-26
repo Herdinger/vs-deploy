@@ -13,6 +13,10 @@ import org.apache.maven.settings.Settings;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Says "Hi" to the user.
@@ -31,12 +35,20 @@ public class Plugin extends AbstractMojo
     private String ownCloudRoot;
     @Parameter( required = true )
     private String vsCloudURL;
+    @Parameter
+    private List<String> ports;
+    @Parameter
+    private Map<String,String> env;
     @Parameter( defaultValue = "${project.build.directory}/${project.build.finalName}.${project.packaging}", required = true )
-    private String warFile;
+    private String artifact;
+    @Parameter( defaultValue = "${project.packaging}", required = true )
+    private String packaging;
+    private boolean isWar;
     private URI ownCloudUri;
 
     public void execute() throws MojoExecutionException
     {
+        isWar = packaging.equals("war");
         try {
             ownCloudUri = new URI(ownCloudRoot);
             if(!ownCloudUri.getScheme().equals("https")) {
@@ -45,13 +57,19 @@ public class Plugin extends AbstractMojo
         } catch (URISyntaxException e) {
             throw new MojoExecutionException("invalid ownCloudRoot");
         }
+        if (ports == null) {
+            ports = Collections.emptyList();
+        }
+        if(env == null) {
+            env = Collections.emptyMap();
+        }
         Server server = settings.getServer(serverId);
         server.getUsername();
         server.getPassword();
         String user = server.getUsername();
         String pass = server.getPassword();
         Sardine uploader = SardineFactory.begin(user,pass);
-        Deployer deployer = new Deployer(getLog(), deploymentPath, ownCloudUri.toString(), uploader, warFile);
+        Deployer deployer = new Deployer(getLog(), deploymentPath, ownCloudUri.toString(), uploader, artifact, isWar, ports, env);
         getLog().info("deploying");
         try {
             deployer.deploy();
