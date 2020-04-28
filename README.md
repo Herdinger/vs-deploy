@@ -1,6 +1,6 @@
-# Deploys a built WAR to the VS Cloud
+# Deploys a built WAR or Fat-JAR to the VS Cloud
 ## Requirements
-The project builds a WAR file.
+The project builds a WAR or Fat-JAR (Jar with dependencies included) file.
 ### Example: Spark
 To make your maven Spark project produce a WAR, just add
 ```xml
@@ -53,7 +53,7 @@ Example:
 <build>
     <plugins>
         <plugin>
-            <groupId>com.github.herdinger.vs.deploy</groupId>
+            <groupId>com.github.herdinger</groupId>
             <artifactId>vs-deploy</artifactId>
             <version>1.0</version>
             <executions>
@@ -82,4 +82,28 @@ Example:
     </plugins>
 </build>
 ```
-
+## Configuration Options
+The serverid used for user and password in your settings.xml
+```xml
+<serverId></serverId>
+```
+The environment variables that get set for your container
+```xml
+<env><EXAMPLE_KEY1>exampleValue</EXAMPLE_KEY1><KEY2>Value2</KEY2></env>
+```
+The ports you want to expose
+```xml
+<ports><param>8080</param></ports>
+```
+The path in the owncloud you want to copy your files too
+```xml
+<deploymentPath></deploymentPath>
+```
+The path to owncloud
+```xml
+<ownCloudRoot></ownCloudRoot>
+```
+The path to the vs cloud
+```xml
+<vsCloudURL></vsCloudURL>
+```
