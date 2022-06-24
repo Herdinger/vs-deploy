@@ -129,7 +129,7 @@
         </plugins>
     </build>
     <properties>
-    <resteasy.version>4.5.3.Final</resteasy.version>
+    <resteasy.version>4.6.0.Final</resteasy.version>
     </properties>
 
 
